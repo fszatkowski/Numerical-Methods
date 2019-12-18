@@ -74,33 +74,50 @@ class Space2D:
         self.u[key[0], key[1]] = value
 
     def plot_u(self):
-        plt.figure(num=None, figsize=(8, 5), dpi=80, facecolor='w', edgecolor='k')
+        plt.figure(num=None, figsize=(64, 40), dpi=80, facecolor="w", edgecolor="k")
         fig, ax = plt.subplots()
-        ax.set_title('U')
+        ax.set_title("U")
         im = plt.imshow(self.u.T, origin="lower", cmap="seismic")
         cbar = plt.colorbar(im)
         plt.show()
 
-    def plot_e(self):
+    def plot_e(self, contour_step=1, quiver_step=5, levels=5):
         e_x, e_y = np.gradient(self.u, edge_order=2)
         e_x, e_y = -e_x, -e_y
         abs_e = np.sqrt(np.power(e_x, 2) + np.power(e_y, 2))
-        xx, yy = np.meshgrid(
-            np.linspace(
-                self.x_spacing.min, self.x_spacing.max  , self.x_spacing.n_points
-            ),
-            np.linspace(
-                self.y_spacing.min, self.y_spacing.max, self.y_spacing.n_points
-            ),
-        )
+        x = np.linspace(self.x_spacing.min, self.x_spacing.max, self.x_spacing.n_points)
+        y = np.linspace(self.y_spacing.min, self.y_spacing.max, self.y_spacing.n_points)
+        xx, yy = np.meshgrid(x, y)
+        xx = xx.T
+        yy = yy.T
 
-        step = 10
-        plt.figure(num=None, figsize=(8, 5), dpi=80, facecolor='w', edgecolor='k')
+        plt.figure(num=None, figsize=(64, 40), dpi=80, facecolor="w", edgecolor="k")
         fig, ax = plt.subplots()
-        plt.gca().set_aspect('equal', adjustable='box')
-        CS = ax.contour(xx[::step, ::step].T, yy[::step, ::step].T, abs_e[::step, ::step], levels=10)
-        ax.clabel(CS, inline=1, fontsize=10)
-        ax.set_title('E magnitude')
+        plt.gca().set_aspect("equal", adjustable="box")
+        CS = ax.contour(
+            xx[::contour_step, ::contour_step],
+            yy[::contour_step, ::contour_step],
+            abs_e[::contour_step, ::contour_step],
+            levels=levels,
+        )
+        ax.clabel(CS, inline=1, fontsize=8)
+
+        mask = (abs_e != 0)
+        xx = xx[mask]
+        yy = yy[mask]
+        e_x = e_x[mask]
+        e_y = e_y[mask]
+        q = ax.quiver(
+            xx[::quiver_step],
+            yy[::quiver_step],
+            e_x[::quiver_step],
+            e_y[::quiver_step],
+            scale_units="xy",
+            angles="xy",
+            scale=1,
+            width=0.003,
+        )
+        ax.set_title("E magnitude")
         plt.show()
 
 
@@ -277,4 +294,4 @@ if __name__ == "__main__":
     potential = equations.solve()
     potential.plot_u()
 
-    potential.plot_e()
+    potential.plot_e(levels=[0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30])
