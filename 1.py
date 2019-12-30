@@ -10,7 +10,7 @@ from tqdm import tqdm
 """ This script computes potential and electric field magnitude 
 for discrete space with multiple fixed-potential electrodes 
 for the rest of the space, u is calculated by solving d2u/dx2 + d2u/dy2 = 0 
-using finite difference method with neumann conditions on the borders"""
+using finite difference method with neumann conditions on the borders """
 
 
 @dataclass
@@ -46,7 +46,6 @@ class Space2D:
         self.y_spacing = y_spacing
 
         self.u = np.zeros((x_spacing.n_points, y_spacing.n_points))
-        self.e = None
 
         self.electrodes = electrodes
         for electrode in self.electrodes:
@@ -102,7 +101,7 @@ class Space2D:
         )
         ax.clabel(CS, inline=1, fontsize=8)
 
-        mask = (abs_e != 0)
+        mask = abs_e != 0
         xx = xx[mask]
         yy = yy[mask]
         e_x = e_x[mask]
@@ -160,8 +159,9 @@ class DifferentialEquations:
 
     def _generate_equations(self):
         """ Generate eqations for points for which second derivative is relevant """
-        self.A = np.zeros((len(self.eq_idx_to_point), len(self.eq_idx_to_point)))
-        self.b = np.zeros((len(self.eq_idx_to_point), 1))
+        num_eqs = self.eq_idx_to_point.shape[0]
+        self.A = np.zeros((num_eqs, num_eqs))
+        self.b = np.zeros((num_eqs, 1))
 
         for eq_idx in tqdm(
             range(self.eq_idx_to_point.shape[0]),
